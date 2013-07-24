@@ -31,6 +31,7 @@ public class X_o_Game {
     private JRadioButton YourselfRadioButton;
     private JRadioButton CompRadioButton;
     private JRadioButton networkGameRadioButton;
+    private JButton[] buttons = new JButton[]{button1, button2, button3, button4, button5, button6, button7, button8, button9};
 
     public X_o_Game() {
         newButton.addMouseListener(new MouseAdapter() {
@@ -41,75 +42,15 @@ public class X_o_Game {
             }
         });
 
-        button1.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button1, x_or_y_User);
-            }
-        });
-
-        button2.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button2, x_or_y_User);
-            }
-        });
-
-        button3.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button3, x_or_y_User );
-            }
-        });
-
-        button4.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button4, x_or_y_User);
-            }
-        });
-
-        button5.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button5, x_or_y_User);
-            }
-        });
-
-        button6.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button6, x_or_y_User);
-            }
-        });
-        button7.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button7, x_or_y_User);
-            }
-        });
-        button8.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button8, x_or_y_User);
-            }
-        });
-        button9.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                setTextToButton(button9, x_or_y_User);
-            }
-        });
-
+        for(final JButton b : buttons){
+            b.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    super.mouseClicked(e);
+                    setTextToButton(b, x_or_y_User);
+                }
+            });
+        }
         x_RadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -216,23 +157,13 @@ public class X_o_Game {
     private void compMove(){
         //computer move
         blockUserNextMove = true;
-        if ( button1.isEnabled() ) {button1.setText(x_or_y_Comp); button1.setEnabled(false);}
-        else
-        if ( button2.isEnabled() ) {button2.setText(x_or_y_Comp); button2.setEnabled(false);}
-        else
-        if ( button3.isEnabled() ) {button3.setText(x_or_y_Comp); button3.setEnabled(false);}
-        else
-        if ( button4.isEnabled() ) {button4.setText(x_or_y_Comp); button4.setEnabled(false);}
-        else
-        if ( button5.isEnabled() ) {button5.setText(x_or_y_Comp); button5.setEnabled(false);}
-        else
-        if ( button6.isEnabled() ) {button6.setText(x_or_y_Comp); button6.setEnabled(false);}
-        else
-        if ( button7.isEnabled() ) {button7.setText(x_or_y_Comp); button7.setEnabled(false);}
-        else
-        if ( button8.isEnabled() ) {button8.setText(x_or_y_Comp); button8.setEnabled(false);}
-        else
-        if ( button9.isEnabled() ) {button9.setText(x_or_y_Comp); button9.setEnabled(false);}
+        for (JButton b : buttons){
+            if ( b.isEnabled() ) {
+                b.setText(x_or_y_Comp);
+                b.setEnabled(false);
+                break;
+            }
+        }
         printLog("Comp move done");
         blockUserNextMove = false;
     }
