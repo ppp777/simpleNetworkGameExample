@@ -3,9 +3,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 
-public class X_o_Game {
+public class X_o_Game extends Thread {
 //    private static final int DIMENTION_TABLE = 3;
     private static final boolean PRINT_LOG_ENABLE = true;
     // gameType : 0 = you vs you; 1 = you vs network; 2 = you vs comp ; 0 - default
@@ -32,12 +37,24 @@ public class X_o_Game {
     private JRadioButton CompRadioButton;
     private JRadioButton networkGameRadioButton;
     private JTextField textField1;
+    private JRadioButton serverRadioButton;
+    private JRadioButton clientRadioButton;
+    private JButton connectButton;
+    private JButton stopSrvButton;
     private JButton[] buttons = new JButton[]{button1, button2, button3, button4, button5, button6, button7, button8, button9};
     private String endGameString = "";
+    private InetAddress serverAddress;
+    public static final int PORT = 8080;
+    public static boolean runServer = false;
+    public x_o_GameServer t;
+
 
     public X_o_Game() {
         textField1.setEnabled(false);
         endGameString = "";
+        serverRadioButton.setEnabled(false);
+        clientRadioButton.setEnabled(false);
+        final x_o_GameServer t = new x_o_GameServer();
 
         newButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -81,6 +98,9 @@ public class X_o_Game {
             public void actionPerformed(ActionEvent e) {
                 //To change body of implemented methods use File | Settings | File Templates.
                 gameType = 0;
+                serverRadioButton.setEnabled(false);
+                clientRadioButton.setEnabled(false);
+                connectButton.setEnabled(false);
                 textField1.setEnabled(false);
                 printLog("Gametype set to 0");
             }
@@ -89,6 +109,9 @@ public class X_o_Game {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //To change body of implemented methods use File | Settings | File Templates.
+                serverRadioButton.setEnabled(false);
+                clientRadioButton.setEnabled(false);
+                connectButton.setEnabled(false);
                 gameType = 2;
                 textField1.setEnabled(false);
                 printLog("Gametype set to 2");
@@ -99,6 +122,80 @@ public class X_o_Game {
             public void actionPerformed(ActionEvent e) {
                 //To change body of implemented methods use File | Settings | File Templates.
                 textField1.setEnabled(true);
+                serverRadioButton.setEnabled(true);
+                clientRadioButton.setEnabled(true);
+            }
+        });
+        serverRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Start server
+                clientRadioButton.setEnabled(false);
+                connectButton.setEnabled(false);
+                printLog("Start server on port " + PORT);
+                runServer = true;
+                t.start();
+            }
+        });
+        clientRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Start client connection
+                connectButton.setEnabled(true);
+                serverRadioButton.setEnabled(false);
+                printLog("Client game choisen");
+            }
+        });
+        connectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //Start connection to Server
+                try {
+                    serverAddress = InetAddress.getByName(textField1.getText());
+                    printLog("Try connetct to IP : " + serverAddress);
+                    // Помещаем все в блок try-finally, чтобы
+                    // быть уверенным, что сокет закроется:
+                    Socket socket = null;
+                    try {
+                        socket = new Socket(serverAddress, PORT);
+                    } catch (IOException e1) {
+                        printLog(e1.getMessage());
+                    }
+                    try {
+                        printLog("socket = " + socket);
+                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                        // Вывод автоматически Output быталкивается PrintWriter'ом.
+                        PrintWriter out = new PrintWriter(new BufferedWriter(
+                                new OutputStreamWriter(socket.getOutputStream())), true);
+                        for (int i = 0; i < 10; i++) {
+                            out.println("howdy " + i);
+                            String str = in.readLine();
+                            printLog(str);
+                        }
+                        out.println("END");
+                    } catch (IOException e1) {
+                        printLog(e1.getMessage());
+                    } finally {
+                        try {
+                            socket.close();
+                        } catch (IOException e1) {
+                            printLog(e1.getMessage());
+                        }
+                    }
+
+                } catch (UnknownHostException e1) {
+                    textField1.setText("");
+                    printLog("Неправильный IP");
+                }
+            }
+        });
+        stopSrvButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+                runServer = false;
+                printLog("Try to interrupt server...");
+                t.interrupt();
             }
         });
     }
@@ -118,9 +215,9 @@ public class X_o_Game {
     public void setPanel1(JPanel panel1) {
         this.panel1 = panel1;
     }
-    private void printLog(String s){
+    public void printLog(String s){
         if (PRINT_LOG_ENABLE){
-            textArea1.setText(textArea1.getText()+ "\n" + s);
+            textArea1.setText(textArea1.getText() + "\n" + s);
         }
     }
     private void setTextToButton(JButton button, String x_or_o){
