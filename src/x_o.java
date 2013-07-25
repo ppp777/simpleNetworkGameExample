@@ -7,7 +7,7 @@ public class x_o {
         frame.setContentPane(new X_o_Game().getPanel1());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.setMinimumSize(new Dimension(400,300));
+        frame.setMinimumSize(new Dimension(600,400));
         frame.setVisible(true);
     }
 }

@@ -12,8 +12,8 @@ public class X_o_Game {
     private static int gameType = 0;
     private boolean blockUserNextMove = false; // блокировка хода игрока на время хода оппонента
     private String x_or_0;
-    private String x_or_y_Comp;
-    private String x_or_y_User;
+    private String x_or_o_Comp;
+    private String x_or_o_User;
     private JPanel panel1;
     private JButton button1;
     private JButton button2;
@@ -31,9 +31,14 @@ public class X_o_Game {
     private JRadioButton YourselfRadioButton;
     private JRadioButton CompRadioButton;
     private JRadioButton networkGameRadioButton;
+    private JTextField textField1;
     private JButton[] buttons = new JButton[]{button1, button2, button3, button4, button5, button6, button7, button8, button9};
+    private String endGameString = "";
 
     public X_o_Game() {
+        textField1.setEnabled(false);
+        endGameString = "";
+
         newButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -47,7 +52,7 @@ public class X_o_Game {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     super.mouseClicked(e);
-                    setTextToButton(b, x_or_y_User);
+                    setTextToButton(b, x_or_o_User);
                 }
             });
         }
@@ -57,7 +62,7 @@ public class X_o_Game {
                 //To change body of implemented methods use File | Settings | File Templates.
                     setX_or_0("x");
                     printLog("UP : x");
-                    x_or_y_User = "x"; x_or_y_Comp = "o";
+                    x_or_o_User = "x"; x_or_o_Comp = "o";
             }
         });
 
@@ -65,9 +70,10 @@ public class X_o_Game {
             @Override
             public void actionPerformed(ActionEvent e) {
                 //To change body of implemented methods use File | Settings | File Templates.
-                setX_or_0("O");
+                setX_or_0("o");
                 printLog( "UP : 0");
-                x_or_y_User = "0"; x_or_y_Comp = "x";
+                x_or_o_User = "o"; x_or_o_Comp = "x";
+                if (gameType == 2) compMove();
             }
         });
         YourselfRadioButton.addActionListener(new ActionListener() {
@@ -75,6 +81,7 @@ public class X_o_Game {
             public void actionPerformed(ActionEvent e) {
                 //To change body of implemented methods use File | Settings | File Templates.
                 gameType = 0;
+                textField1.setEnabled(false);
                 printLog("Gametype set to 0");
             }
         });
@@ -83,7 +90,15 @@ public class X_o_Game {
             public void actionPerformed(ActionEvent e) {
                 //To change body of implemented methods use File | Settings | File Templates.
                 gameType = 2;
+                textField1.setEnabled(false);
                 printLog("Gametype set to 2");
+            }
+        });
+        networkGameRadioButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //To change body of implemented methods use File | Settings | File Templates.
+                textField1.setEnabled(true);
             }
         });
     }
@@ -109,6 +124,10 @@ public class X_o_Game {
         }
     }
     private void setTextToButton(JButton button, String x_or_o){
+        if (gameType == 2){
+            if (x_RadioButton.isEnabled()) x_RadioButton.setEnabled(false);
+            if (O_RadioButton.isEnabled()) O_RadioButton.setEnabled(false);
+        }
         if (!blockUserNextMove){
             if (button.isEnabled()) button.setText(x_or_o);
                 button.setEnabled(false);
@@ -124,47 +143,145 @@ public class X_o_Game {
         }
 
         if (checkEndGame(x_or_o)) {
-            printLog(x_or_o+" win game!");
-            clearGame();
+            printLog(endGameString);
+            stopGame();
         }
     }
-    private Boolean checkEndGame(String x_or_y){
+    private Boolean checkEndGame(String x_or_o){
         //123,456,789,147,258,369,159,357 = выйгрыш
-        if ( (button1.getText().equals(x_or_y) && button2.getText().equals(x_or_y) && button3.getText().equals(x_or_y)) ||
-                (button4.getText().equals(x_or_y) && button5.getText().equals(x_or_y) && button6.getText().equals(x_or_y)) ||
-                (button7.getText().equals(x_or_y) && button8.getText().equals(x_or_y) && button9.getText().equals(x_or_y)) ||
-                (button1.getText().equals(x_or_y) && button4.getText().equals(x_or_y) && button7.getText().equals(x_or_y)) ||
-                (button2.getText().equals(x_or_y) && button5.getText().equals(x_or_y) && button8.getText().equals(x_or_y)) ||
-                (button3.getText().equals(x_or_y) && button6.getText().equals(x_or_y) && button9.getText().equals(x_or_y)) ||
-                (button1.getText().equals(x_or_y) && button5.getText().equals(x_or_y) && button9.getText().equals(x_or_y)) ||
-                (button3.getText().equals(x_or_y) && button5.getText().equals(x_or_y) && button7.getText().equals(x_or_y)) 
+        if ( (button1.getText().equals(x_or_o) && button2.getText().equals(x_or_o) && button3.getText().equals(x_or_o)) ||
+                (button4.getText().equals(x_or_o) && button5.getText().equals(x_or_o) && button6.getText().equals(x_or_o)) ||
+                (button7.getText().equals(x_or_o) && button8.getText().equals(x_or_o) && button9.getText().equals(x_or_o)) ||
+                (button1.getText().equals(x_or_o) && button4.getText().equals(x_or_o) && button7.getText().equals(x_or_o)) ||
+                (button2.getText().equals(x_or_o) && button5.getText().equals(x_or_o) && button8.getText().equals(x_or_o)) ||
+                (button3.getText().equals(x_or_o) && button6.getText().equals(x_or_o) && button9.getText().equals(x_or_o)) ||
+                (button1.getText().equals(x_or_o) && button5.getText().equals(x_or_o) && button9.getText().equals(x_or_o)) ||
+                (button3.getText().equals(x_or_o) && button5.getText().equals(x_or_o) && button7.getText().equals(x_or_o))
                 ) {
+                  endGameString = x_or_o + " win game!";
                   return true;
         }
+        else
+            if  (!button1.isEnabled() && !button2.isEnabled() && !button3.isEnabled() && !button4.isEnabled() &&
+                    !button5.isEnabled() && !button6.isEnabled() && !button7.isEnabled() && !button8.isEnabled() &&
+                    !button9.isEnabled() && endGameString.equals("")){
+                endGameString = "Ничья";
+                return true;
+            }
         else
             return false;
     }
     private void clearGame(){
-        button1.setText("*");button2.setText("*");button3.setText("*");button4.setText("*");
-        button5.setText("*");button6.setText("*");button7.setText("*");button8.setText("*");
-        button9.setText("*");
-        button1.setEnabled(true);button2.setEnabled(true);button3.setEnabled(true);
-        button4.setEnabled(true);button5.setEnabled(true);button6.setEnabled(true);
-        button7.setEnabled(true);button8.setEnabled(true);button9.setEnabled(true);
-        if (gameType >0 ) blockUserNextMove = false; // unblock user move
+        endGameString = "";
+        for (JButton b : buttons){
+            b.setText("*");
+            b.setEnabled(true);
+        }
+        x_RadioButton.setEnabled(true);
+        O_RadioButton.setEnabled(true);
         printLog("New game start");
     }
+
     private void compMove(){
         //computer move
-        blockUserNextMove = true;
-        for (JButton b : buttons){
-            if ( b.isEnabled() ) {
-                b.setText(x_or_y_Comp);
+        if (endGameString.equals("")){
+            if (x_RadioButton.isEnabled()) x_RadioButton.setEnabled(false);
+            if (O_RadioButton.isEnabled()) O_RadioButton.setEnabled(false);
+            JButton b;
+            if ((b = compChoiseNextCell()) != null){
+                b.setText(x_or_o_Comp);
                 b.setEnabled(false);
-                break;
+                printLog("Comp move done");
+            }
+            if (checkEndGame(x_or_o_Comp)) {
+                printLog(endGameString);
+                stopGame();
             }
         }
-        printLog("Comp move done");
-        blockUserNextMove = false;
+    }
+    private JButton compChoiseNextCell(){
+            //123,456,789,147,258,369,159,357 = выйгрыш
+
+            if (button1.getText().equals(x_or_o_Comp) && button2.getText().equals(x_or_o_Comp) && button3.isEnabled()) return button3;
+            if (button1.getText().equals(x_or_o_Comp) && button3.getText().equals(x_or_o_Comp) && button2.isEnabled()) return button2;
+            if (button2.getText().equals(x_or_o_Comp) && button3.getText().equals(x_or_o_Comp) && button1.isEnabled()) return button1;
+
+            if (button4.getText().equals(x_or_o_Comp) && button5.getText().equals(x_or_o_Comp) && button6.isEnabled()) return button6;
+            if (button4.getText().equals(x_or_o_Comp) && button6.getText().equals(x_or_o_Comp) && button5.isEnabled()) return button5;
+            if (button5.getText().equals(x_or_o_Comp) && button6.getText().equals(x_or_o_Comp) && button4.isEnabled()) return button4;
+
+            if (button7.getText().equals(x_or_o_Comp) && button8.getText().equals(x_or_o_Comp) && button9.isEnabled()) return button9;
+            if (button7.getText().equals(x_or_o_Comp) && button9.getText().equals(x_or_o_Comp) && button8.isEnabled()) return button8;
+            if (button9.getText().equals(x_or_o_Comp) && button8.getText().equals(x_or_o_Comp) && button7.isEnabled()) return button7;
+
+            if (button1.getText().equals(x_or_o_Comp) && button4.getText().equals(x_or_o_Comp) && button7.isEnabled()) return button7;
+            if (button1.getText().equals(x_or_o_Comp) && button7.getText().equals(x_or_o_Comp) && button4.isEnabled()) return button4;
+            if (button7.getText().equals(x_or_o_Comp) && button4.getText().equals(x_or_o_Comp) && button1.isEnabled()) return button1;
+
+            if (button2.getText().equals(x_or_o_Comp) && button5.getText().equals(x_or_o_Comp) && button8.isEnabled()) return button8;
+            if (button2.getText().equals(x_or_o_Comp) && button8.getText().equals(x_or_o_Comp) && button5.isEnabled()) return button5;
+            if (button8.getText().equals(x_or_o_Comp) && button5.getText().equals(x_or_o_Comp) && button2.isEnabled()) return button2;
+
+            if (button3.getText().equals(x_or_o_Comp) && button6.getText().equals(x_or_o_Comp) && button9.isEnabled()) return button9;
+            if (button3.getText().equals(x_or_o_Comp) && button9.getText().equals(x_or_o_Comp) && button6.isEnabled()) return button6;
+            if (button9.getText().equals(x_or_o_Comp) && button6.getText().equals(x_or_o_Comp) && button3.isEnabled()) return button3;
+
+            if (button1.getText().equals(x_or_o_Comp) && button5.getText().equals(x_or_o_Comp) && button9.isEnabled()) return button9;
+            if (button1.getText().equals(x_or_o_Comp) && button9.getText().equals(x_or_o_Comp) && button5.isEnabled()) return button5;
+            if (button9.getText().equals(x_or_o_Comp) && button5.getText().equals(x_or_o_Comp) && button1.isEnabled()) return button1;
+
+            if (button3.getText().equals(x_or_o_Comp) && button5.getText().equals(x_or_o_Comp) && button7.isEnabled()) return button7;
+            if (button3.getText().equals(x_or_o_Comp) && button7.getText().equals(x_or_o_Comp) && button5.isEnabled()) return button5;
+            if (button7.getText().equals(x_or_o_Comp) && button5.getText().equals(x_or_o_Comp) && button3.isEnabled()) return button3;
+            //------------
+            if (button1.getText().equals(x_or_o_User) && button2.getText().equals(x_or_o_User) && button3.isEnabled()) return button3;
+            if (button1.getText().equals(x_or_o_User) && button3.getText().equals(x_or_o_User) && button2.isEnabled()) return button2;
+            if (button2.getText().equals(x_or_o_User) && button3.getText().equals(x_or_o_User) && button1.isEnabled()) return button1;
+            
+            if (button4.getText().equals(x_or_o_User) && button5.getText().equals(x_or_o_User) && button6.isEnabled()) return button6;
+            if (button4.getText().equals(x_or_o_User) && button6.getText().equals(x_or_o_User) && button5.isEnabled()) return button5;
+            if (button5.getText().equals(x_or_o_User) && button6.getText().equals(x_or_o_User) && button4.isEnabled()) return button4;
+            
+            if (button7.getText().equals(x_or_o_User) && button8.getText().equals(x_or_o_User) && button9.isEnabled()) return button9;
+            if (button7.getText().equals(x_or_o_User) && button9.getText().equals(x_or_o_User) && button8.isEnabled()) return button8;
+            if (button9.getText().equals(x_or_o_User) && button8.getText().equals(x_or_o_User) && button7.isEnabled()) return button7;
+            
+            if (button1.getText().equals(x_or_o_User) && button4.getText().equals(x_or_o_User) && button7.isEnabled()) return button7;
+            if (button1.getText().equals(x_or_o_User) && button7.getText().equals(x_or_o_User) && button4.isEnabled()) return button4;
+            if (button7.getText().equals(x_or_o_User) && button4.getText().equals(x_or_o_User) && button1.isEnabled()) return button1;
+            
+            if (button2.getText().equals(x_or_o_User) && button5.getText().equals(x_or_o_User) && button8.isEnabled()) return button8;
+            if (button2.getText().equals(x_or_o_User) && button8.getText().equals(x_or_o_User) && button5.isEnabled()) return button5;
+            if (button8.getText().equals(x_or_o_User) && button5.getText().equals(x_or_o_User) && button2.isEnabled()) return button2;
+            
+            if (button3.getText().equals(x_or_o_User) && button6.getText().equals(x_or_o_User) && button9.isEnabled()) return button9;
+            if (button3.getText().equals(x_or_o_User) && button9.getText().equals(x_or_o_User) && button6.isEnabled()) return button6;
+            if (button9.getText().equals(x_or_o_User) && button6.getText().equals(x_or_o_User) && button3.isEnabled()) return button3;
+            
+            if (button1.getText().equals(x_or_o_User) && button5.getText().equals(x_or_o_User) && button9.isEnabled()) return button9;
+            if (button1.getText().equals(x_or_o_User) && button9.getText().equals(x_or_o_User) && button5.isEnabled()) return button5;
+            if (button9.getText().equals(x_or_o_User) && button5.getText().equals(x_or_o_User) && button1.isEnabled()) return button1;
+            
+            if (button3.getText().equals(x_or_o_User) && button5.getText().equals(x_or_o_User) && button7.isEnabled()) return button7;
+            if (button3.getText().equals(x_or_o_User) && button7.getText().equals(x_or_o_User) && button5.isEnabled()) return button5;
+            if (button7.getText().equals(x_or_o_User) && button5.getText().equals(x_or_o_User) && button3.isEnabled()) return button3;
+
+            if (button5.isEnabled()) return button5;
+            if (button1.isEnabled()) return button1;
+            if (button2.isEnabled()) return button2;
+            if (button3.isEnabled()) return button3;
+            if (button4.isEnabled()) return button4;
+            if (button6.isEnabled()) return button6;
+            if (button7.isEnabled()) return button7;
+            if (button8.isEnabled()) return button8;
+            if (button9.isEnabled()) return button9;
+
+       
+        return null;
+    }
+    public void stopGame(){
+        for (JButton b : buttons){
+            if ( b.isEnabled() ) b.setEnabled(false);
+        }
     }
 }
