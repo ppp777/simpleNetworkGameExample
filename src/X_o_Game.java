@@ -49,12 +49,12 @@ public class X_o_Game extends Thread {
     public x_o_GameServer t;
 
 
-    public X_o_Game() {
+    public X_o_Game() throws IOException {
         textField1.setEnabled(false);
         endGameString = "";
         serverRadioButton.setEnabled(false);
         clientRadioButton.setEnabled(false);
-        final x_o_GameServer t = new x_o_GameServer();
+        final x_o_GameServer t = new x_o_GameServer(InetAddress.getByName("127.0.0.1"),PORT);
 
         newButton.addMouseListener(new MouseAdapter() {
             @Override
