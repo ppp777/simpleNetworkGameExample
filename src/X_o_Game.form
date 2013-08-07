@@ -53,7 +53,9 @@
         <children>
           <component id="ed870" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
             <constraints/>
-            <properties/>
+            <properties>
+              <text value=""/>
+            </properties>
           </component>
         </children>
       </scrollpane>
