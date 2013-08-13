@@ -19,18 +19,22 @@ public class x_o_GameServer extends Thread/*implements Runnable */{
         try {
             ss = new ServerSocket(port);
             ss.setReuseAddress(true);
+            Socket socket = ss.accept();
             while (!stop){
-                Socket socket = ss.accept();
-                Thread.sleep(50);
+                //Thread.sleep(50);
                 ObjectInputStream oIS = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream oOS = new ObjectOutputStream(socket.getOutputStream());
                 GameNetPacket pServer = (GameNetPacket) oIS.readObject();
-                System.out.println(pServer);
-//                oOS.writeObject(new GameNetPacket(1,"Return from server "+pServer));
-                oOS.writeObject(X_o_Game.sp);
-                socket.close();
+
+                X_o_Game.updategame(pServer);
+                prLog(pServer.toString());
+                if (X_o_Game.sendServerPacket) {
+                    ObjectOutputStream oOS = new ObjectOutputStream(socket.getOutputStream());
+                    oOS.writeObject(X_o_Game.sp);
+                    X_o_Game.sendServerPacket = false;
+                }
                 prLog("Stop =  " + stop);
             }
+            socket.close();
             ss.close();
         } catch (Exception e) {
             e.printStackTrace();

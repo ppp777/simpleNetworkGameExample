@@ -23,15 +23,15 @@ public class X_o_Game extends Thread {
     private String x_or_o_Comp;
     private String x_or_o_User;
     private JPanel panel1;
-    private JButton button1;
-    private JButton button2;
-    private JButton button3;
-    private JButton button4;
-    private JButton button5;
-    private JButton button6;
-    private JButton button7;
-    private JButton button8;
-    private JButton button9;
+    private  JButton button1;
+    private  JButton button2;
+    private  JButton button3;
+    private  JButton button4;
+    private  JButton button5;
+    private  JButton button6;
+    private  JButton button7;
+    private  JButton button8;
+    private  JButton button9;
     private JButton newButton;
     private JRadioButton x_RadioButton;
     private JRadioButton O_RadioButton;
@@ -44,15 +44,18 @@ public class X_o_Game extends Thread {
     private JRadioButton clientRadioButton;
     private JButton connectButton;
     private JButton stopSrvButton;
-    private JButton[] buttons = new JButton[]{button1, button2, button3, button4, button5, button6, button7, button8, button9};
+    private  JButton[] buttons = new JButton[]{button1, button2, button3, button4, button5, button6, button7, button8, button9};
+    private static JButton[] buttons1 = null;
     private String endGameString = "";
     private InetAddress serverAddress;
     public static final int PORT = 8080;
     public static boolean runServer = false;
     public x_o_GameServer t;
     public static boolean waitForNextTurn = false;
-    Socket socket;
+    static Socket socket;
     protected static volatile GameNetPacket sp = null;
+    protected static volatile GameNetPacket sp1 = null;
+    public static boolean sendServerPacket = false;
 
 
     public X_o_Game() throws IOException {
@@ -60,6 +63,7 @@ public class X_o_Game extends Thread {
         endGameString = "";
         serverRadioButton.setEnabled(false);
         clientRadioButton.setEnabled(false);
+        buttons1 = buttons;
         //x_o_GameServer t = new x_o_GameServer(PORT);
 
         newButton.addMouseListener(new MouseAdapter() {
@@ -75,8 +79,11 @@ public class X_o_Game extends Thread {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     super.mouseClicked(e);
-                    if ( b.isEnabled() && !waitForNextTurn )
+                    if ( b.isEnabled() && !waitForNextTurn ){
                         setTextToButton( b, x_or_o_User );
+                        sp.setCode(b);sp.setDataString(b.getText());
+                        if (gameType == 1) {sendServerPacket = true;}
+                    }
                 }
             });
         }
@@ -145,6 +152,7 @@ public class X_o_Game extends Thread {
             public void actionPerformed(ActionEvent e) {
                 //To change body of implemented methods use File | Settings | File Templates.
                 textField1.setEnabled(true);
+                gameType = 1;
                 serverRadioButton.setEnabled(true);
                 clientRadioButton.setEnabled(true);
                 clearGame();
@@ -160,6 +168,7 @@ public class X_o_Game extends Thread {
                 printLog("Start server on port " + PORT);
                 x_o_GameServer t = new x_o_GameServer(PORT);
                 x_o_GameServer.stop = false;
+                waitForNextTurn = true;
                 O_RadioButton.doClick();
                 t.start();
             }
@@ -172,7 +181,7 @@ public class X_o_Game extends Thread {
                 connectButton.setEnabled(true);
                 serverRadioButton.setEnabled(false);
                 x_RadioButton.doClick();
-                waitForNextTurn = true;
+                waitForNextTurn = false;
                 printLog("Client game choisen");
             }
         });
@@ -183,6 +192,10 @@ public class X_o_Game extends Thread {
                 //Client connect's to server
                 try {
                     socket = new Socket("127.0.0.1",PORT);
+                    blockUserNextMove = false;
+                    if ( socket.isConnected() ) {
+                        connectButton.setEnabled(false);
+                    }
                     //exchangePacket();
                     //socket.close();
                 }
@@ -218,6 +231,28 @@ public class X_o_Game extends Thread {
         }
         return pClient;
     }
+    private void sendPacket(GameNetPacket packet){
+        try {
+            ObjectOutputStream oOS = new ObjectOutputStream(socket.getOutputStream());
+            oOS.writeObject(packet);
+        }
+        catch (Exception e1){
+            e1.printStackTrace();
+        }
+    }
+
+    public static GameNetPacket recvPacket(){
+        GameNetPacket pClient = null;
+        try {
+            ObjectInputStream oIS = new ObjectInputStream(socket.getInputStream());
+            pClient = (GameNetPacket) oIS.readObject();
+        }
+        catch (Exception e1){
+            e1.printStackTrace();
+        }
+        return pClient;
+    }
+
 
     public String getX_or_0() {
         return x_or_0;
@@ -253,16 +288,21 @@ public class X_o_Game extends Thread {
 
         }
         if (gameType == 1 ) {
-            if (x_or_o.equals("x")) { //client
-                try{
-                    printLog(exchangePacket(new GameNetPacket(button, button.getText())).getDataString());
-
-                } catch (Exception e1){
-                    e1.printStackTrace();
+            System.out.println("----- Network game ----------");
+            if(clientRadioButton.isEnabled()){
+                sendPacket(new GameNetPacket(button,button.getText()));
+                if (checkEndGame(x_or_o)) {
+                    printLog(endGameString);
+                    stopGame();
                 }
-            }
-            else { //server
-                sp = new GameNetPacket(button,button.getText());
+                GameNetPacket rPacket = recvPacket();
+                System.out.print(rPacket);
+                for(final JButton b : buttons) {
+                    if (b.equals(rPacket.getCode())) {
+                        b.setText("o");
+                        b.setEnabled(false);
+                    }
+                }
             }
         }
         if (gameType == 2 ) {
@@ -307,6 +347,7 @@ public class X_o_Game extends Thread {
         x_RadioButton.setEnabled(true);
         O_RadioButton.setEnabled(true);
         waitForNextTurn = false;
+        connectButton.setEnabled(true);
         printLog("New game start");
     }
 
@@ -424,6 +465,17 @@ public class X_o_Game extends Thread {
             }
             catch (Exception e1){
                 e1.printStackTrace();
+            }
+        }
+    }
+
+    public static void updategame(GameNetPacket inPacket) {
+        //update game state from packet from client
+        System.out.println(inPacket);
+        for(final JButton b : buttons1) {
+            if (b.equals(inPacket.getCode())) {
+                b.setText("o");
+                b.setEnabled(false);
             }
         }
     }
